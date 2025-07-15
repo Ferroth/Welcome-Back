@@ -37,6 +37,11 @@
       cursor: grab;
       z-index: 1;
       user-select: none;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      position: fixed;
+      height: 4em; /* roughly letter size */
     }
     #container:active {
       cursor: grabbing;
@@ -90,45 +95,60 @@
       letters.push(span);
     }
 
-    // Positions of letters
-    let positions = letters.map(() => ({x: window.innerWidth / 2, y: window.innerHeight / 2}));
-    let target = {x: window.innerWidth / 2, y: window.innerHeight / 2};
+    // Initial positions: each letter's relative position inside container
+    // We'll track absolute x,y relative to container's center for snake effect
+    let positions = [];
+    const containerRect = container.getBoundingClientRect();
+    const centerX = containerRect.width / 2;
+    const centerY = containerRect.height / 2;
+
+    // Initialize positions array to all letters starting at center
+    for(let i=0; i<letters.length; i++) {
+      positions.push({x: centerX, y: centerY});
+    }
+
+    let target = {x: centerX, y: centerY};
     let isDragging = false;
 
-    // Update container initial position center
-    container.style.left = `${target.x}px`;
-    container.style.top = `${target.y}px`;
-    container.style.position = 'absolute';
+    // Get mouse/touch position relative to container
+    function getRelativePosition(clientX, clientY) {
+      const rect = container.getBoundingClientRect();
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
 
-    // Listen for mouse/touch down to start dragging
     container.addEventListener('mousedown', e => {
       isDragging = true;
-      target.x = e.clientX;
-      target.y = e.clientY;
+      const pos = getRelativePosition(e.clientX, e.clientY);
+      target.x = pos.x;
+      target.y = pos.y;
       e.preventDefault();
     });
     container.addEventListener('touchstart', e => {
       isDragging = true;
-      target.x = e.touches[0].clientX;
-      target.y = e.touches[0].clientY;
+      const pos = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
+      target.x = pos.x;
+      target.y = pos.y;
       e.preventDefault();
     });
 
-    // Listen for mouse/touch move to update target position
     window.addEventListener('mousemove', e => {
       if (isDragging) {
-        target.x = e.clientX;
-        target.y = e.clientY;
+        const pos = getRelativePosition(e.clientX, e.clientY);
+        target.x = pos.x;
+        target.y = pos.y;
       }
     });
     window.addEventListener('touchmove', e => {
       if (isDragging) {
-        target.x = e.touches[0].clientX;
-        target.y = e.touches[0].clientY;
+        const pos = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
+        target.x = pos.x;
+        target.y = pos.y;
       }
     });
 
-    // Stop dragging on mouse/touch up
     window.addEventListener('mouseup', () => {
       isDragging = false;
     });
@@ -136,24 +156,25 @@
       isDragging = false;
     });
 
-    // Snake movement parameters
+    // Snake movement speed
     const speed = 0.2;
 
     function animate() {
-      // Move the first letter toward the target
+      // Move first letter toward target position
       positions[0].x += (target.x - positions[0].x) * speed;
       positions[0].y += (target.y - positions[0].y) * speed;
 
-      // Each subsequent letter follows the one before it
+      // Subsequent letters follow the one before
       for (let i = 1; i < letters.length; i++) {
-        positions[i].x += (positions[i-1].x - positions[i].x) * speed;
-        positions[i].y += (positions[i-1].y - positions[i].y) * speed;
+        positions[i].x += (positions[i - 1].x - positions[i].x) * speed;
+        positions[i].y += (positions[i - 1].y - positions[i].y) * speed;
       }
 
-      // Apply positions and wave effect
+      // Apply positions with vertical wave effect
       letters.forEach((letter, i) => {
-        const offsetY = Math.sin(Date.now() / 200 + i) * 5; // small vertical wave
-        letter.style.transform = `translate(${positions[i].x - window.innerWidth / 2}px, ${positions[i].y - window.innerHeight / 2 + offsetY}px)`;
+        const offsetY = Math.sin(Date.now() / 200 + i) * 5;
+        // Translate relative to container center
+        letter.style.transform = `translate(${positions[i].x - centerX}px, ${positions[i].y - centerY + offsetY}px)`;
       });
 
       requestAnimationFrame(animate);
