@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Draggable Neon Snake Text + Rain Effect</title>
+  <title>Draggable Neon Snake Text + Image Popup</title>
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
@@ -63,7 +63,6 @@
       position: relative;
       transition: transform 0.1s ease-out;
     }
-    /* Subtext */
     p {
       position: fixed;
       bottom: 40px;
@@ -78,11 +77,10 @@
       top: 70%;
       transform: translateY(-50%);
     }
-    /* Clickable text button */
     #rainBtn {
       position: fixed;
       left: 50%;
-      top: 60%; /* midway between #container and p */
+      top: 60%;
       transform: translateX(-50%);
       font-size: 1.2em;
       color: #0cc;
@@ -98,28 +96,31 @@
     #rainBtn:hover {
       color: #33ffff;
     }
-    /* Rain drop style */
-    .rain-drop {
+    .popup-image {
       position: fixed;
-      width: 30px;
-      height: 30px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: auto;
+      z-index: 999;
+      box-shadow: 0 0 40px #0ff;
+      border-radius: 12px;
+      transition: opacity 0.4s ease;
+      opacity: 0;
       pointer-events: none;
-      will-change: transform;
-      z-index: 1000;
-      user-select: none;
     }
   </style>
 </head>
 <body>
   <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
 
-  <!-- Clickable text button -->
   <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
 
   <p>Let’s make this year amazing 🎓📚✨</p>
 
   <script>
-    // Text snake code
+    // Draggable snake text
     const text = "Welcome Back to School!".toUpperCase();
     const container = document.getElementById('container');
     const letters = [];
@@ -135,12 +136,7 @@
     let containerRect = container.getBoundingClientRect();
     let centerX = containerRect.width / 2;
     let centerY = containerRect.height / 2;
-
-    let positions = [];
-    for (let i = 0; i < letters.length; i++) {
-      positions.push({ x: centerX, y: centerY });
-    }
-
+    let positions = letters.map(() => ({ x: centerX, y: centerY }));
     let isDragging = false;
     let target = { x: centerX, y: centerY };
     let headIndex = 0;
@@ -176,13 +172,8 @@
         target = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
       }
     });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-    window.addEventListener('touchend', () => {
-      isDragging = false;
-    });
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('touchend', () => isDragging = false);
 
     const speed = 0.2;
 
@@ -213,58 +204,29 @@
     }
     animate();
 
-    // Rain effect code
+    // One-time image popup toggle
     const rainBtn = document.getElementById('rainBtn');
     const rainContainer = document.body;
-
-    // Replace this URL with your own PNG image URL:
-    const rainImageURL = "school.jpg";
-
-    function createRainDrop() {
-      const drop = document.createElement('img');
-      drop.src = rainImageURL;
-      drop.className = 'rain-drop';
-      drop.style.left = Math.random() * window.innerWidth + 'px';
-      drop.style.top = '-40px';
-      drop.style.width = "60px";
-      drop.style.height = "60px";
-      drop.style.opacity = (0.6 + Math.random() * 0.4).toFixed(2);
-      rainContainer.appendChild(drop);
-
-      let speedY = 2 + Math.random() * 3;
-      let speedX = (Math.random() - 0.5) * 1.5;
-      let posX = parseFloat(drop.style.left);
-      let posY = -40;
-
-      function fall() {
-        posY += speedY;
-        posX += speedX;
-        drop.style.top = posY + "px";
-        drop.style.left = posX + "px";
-
-        if (posY > window.innerHeight) {
-          drop.remove();
-          return;
-        }
-        requestAnimationFrame(fall);
-      }
-      fall();
-    }
-
-    function startRain() {
-      for (let i = 0; i < 30; i++) {
-        setTimeout(createRainDrop, i * 100);
-      }
-    }
+    const rainImageURL = "school.jpg"; // Replace with your image filename
+    let popupImage = null;
 
     rainBtn.addEventListener('click', () => {
-      startRain();
-    });
+      if (!popupImage) {
+        popupImage = document.createElement('img');
+        popupImage.src = rainImageURL;
+        popupImage.className = 'popup-image';
+        rainContainer.appendChild(popupImage);
 
-    rainBtn.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        startRain();
+        // Allow image to appear with fade
+        setTimeout(() => {
+          popupImage.style.opacity = '1';
+        }, 10);
+      } else {
+        popupImage.style.opacity = '0';
+        setTimeout(() => {
+          popupImage.remove();
+          popupImage = null;
+        }, 400);
       }
     });
   </script>
