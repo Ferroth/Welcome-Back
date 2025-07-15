@@ -39,7 +39,7 @@
       z-index: 2;
       user-select: none;
       left: 50%;
-      top: 50%;
+      top: 45%;
       transform: translate(-50%, -50%);
       position: fixed;
       height: 4em;
@@ -75,19 +75,22 @@
       z-index: 1;
       user-select: none;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      top: 70%;
+      transform: translateY(-50%);
     }
     /* Clickable text button */
     #rainBtn {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 1.5em;
+      left: 50%;
+      top: 60%; /* midway between #container and p */
+      transform: translateX(-50%);
+      font-size: 1.2em;
       color: #0cc;
       cursor: pointer;
       user-select: none;
       text-decoration: underline;
       z-index: 3;
-      font-weight: bold;
+      font-weight: 600;
       background: transparent;
       border: none;
       outline: none;
@@ -109,10 +112,11 @@
 </head>
 <body>
   <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
-  <p>Let’s make this year amazing 🎓📚✨</p>
 
   <!-- Clickable text button -->
   <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
+
+  <p>Let’s make this year amazing 🎓📚✨</p>
 
   <script>
     // Text snake code
@@ -248,7 +252,6 @@
     }
 
     function startRain() {
-      // Create 30 drops in quick succession
       for (let i = 0; i < 30; i++) {
         setTimeout(createRainDrop, i * 100);
       }
@@ -258,7 +261,6 @@
       startRain();
     });
 
-    // Optional: allow triggering rain with Enter key on the "button"
     rainBtn.addEventListener('keydown', e => {
       if(e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
