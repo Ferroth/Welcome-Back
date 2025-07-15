@@ -2,24 +2,18 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Neon Back to School</title>
+  <title>Draggable Neon Snake Text</title>
   <style>
-    /* Reset and basics */
     html, body {
       margin: 0; padding: 0; height: 100%;
-      font-family: 'Courier New', Courier, monospace;
       background: #0f0f1a;
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
-      text-align: center;
-      color: #0ff; /* base neon cyan */
       overflow: hidden;
       user-select: none;
+      font-family: 'Courier New', Courier, monospace;
     }
-
-    /* Neon glowing background gradient animation */
     body::before {
       content: "";
       position: fixed;
@@ -31,76 +25,140 @@
       opacity: 0.6;
       z-index: 0;
     }
-
     @keyframes neonBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
-
-    /* Neon flicker and glow for main text */
-    h1 {
+    #container {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      cursor: grab;
+      z-index: 1;
+      user-select: none;
+    }
+    #container:active {
+      cursor: grabbing;
+    }
+    .letter {
       font-size: 4em;
       font-weight: 900;
-      color: #0ff;
+      color: #0cc;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.05em;
       text-shadow:
-        0 0 5px #0ff,
-        0 0 10px #0ff,
-        0 0 20px #0ff,
-        0 0 40px #0ff,
-        0 0 80px #0ff;
-      animation: flicker 3s infinite alternate ease-in-out;
-      z-index: 1;
-      margin: 0;
-      opacity: 0;
-      animation-fill-mode: forwards;
-      animation-delay: 0.5s;
-      animation-name: fadeInThenFlicker;
+        0 0 6px #0cc,
+        0 0 12px #0cc,
+        0 0 20px #0cc,
+        0 0 40px #0cc,
+        0 0 80px #0cc;
+      user-select: none;
+      position: relative;
+      transition: transform 0.1s ease-out;
     }
-
-    @keyframes fadeInThenFlicker {
-      0% {opacity: 0;}
-      30% {opacity: 1;}
-      100% {opacity: 1;}
-    }
-
-    @keyframes flicker {
-      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-        text-shadow:
-          0 0 5px #0ff,
-          0 0 10px #0ff,
-          0 0 20px #0ff,
-          0 0 40px #0ff,
-          0 0 80px #0ff;
-      }
-      20%, 22%, 24%, 55% {
-        text-shadow: none;
-        color: #003333;
-      }
-    }
-
-    /* Subtext fade-in */
+    /* Subtext */
     p {
+      position: fixed;
+      bottom: 40px;
+      width: 100%;
+      text-align: center;
       font-size: 1.5em;
       color: #66ffff;
-      margin-top: 20px;
-      opacity: 0;
       text-shadow: 0 0 5px #66ffff;
-      animation: fadeIn 3s ease-in 1.8s forwards;
       z-index: 1;
-    }
-
-    @keyframes fadeIn {
-      to {
-        opacity: 1;
-      }
+      user-select: none;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
   </style>
 </head>
 <body>
-  <h1>Welcome Back to School!</h1>
+  <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
   <p>Let’s make this year amazing 🎓📚✨</p>
+
+  <script>
+    const text = "Welcome Back to School!".toUpperCase();
+    const container = document.getElementById('container');
+    const letters = [];
+
+    // Create span for each letter
+    for (let i = 0; i < text.length; i++) {
+      const span = document.createElement('span');
+      span.classList.add('letter');
+      span.textContent = text[i];
+      container.appendChild(span);
+      letters.push(span);
+    }
+
+    // Positions of letters
+    let positions = letters.map(() => ({x: window.innerWidth / 2, y: window.innerHeight / 2}));
+    let target = {x: window.innerWidth / 2, y: window.innerHeight / 2};
+    let isDragging = false;
+
+    // Update container initial position center
+    container.style.left = `${target.x}px`;
+    container.style.top = `${target.y}px`;
+    container.style.position = 'absolute';
+
+    // Listen for mouse/touch down to start dragging
+    container.addEventListener('mousedown', e => {
+      isDragging = true;
+      target.x = e.clientX;
+      target.y = e.clientY;
+      e.preventDefault();
+    });
+    container.addEventListener('touchstart', e => {
+      isDragging = true;
+      target.x = e.touches[0].clientX;
+      target.y = e.touches[0].clientY;
+      e.preventDefault();
+    });
+
+    // Listen for mouse/touch move to update target position
+    window.addEventListener('mousemove', e => {
+      if (isDragging) {
+        target.x = e.clientX;
+        target.y = e.clientY;
+      }
+    });
+    window.addEventListener('touchmove', e => {
+      if (isDragging) {
+        target.x = e.touches[0].clientX;
+        target.y = e.touches[0].clientY;
+      }
+    });
+
+    // Stop dragging on mouse/touch up
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    // Snake movement parameters
+    const speed = 0.2;
+
+    function animate() {
+      // Move the first letter toward the target
+      positions[0].x += (target.x - positions[0].x) * speed;
+      positions[0].y += (target.y - positions[0].y) * speed;
+
+      // Each subsequent letter follows the one before it
+      for (let i = 1; i < letters.length; i++) {
+        positions[i].x += (positions[i-1].x - positions[i].x) * speed;
+        positions[i].y += (positions[i-1].y - positions[i].y) * speed;
+      }
+
+      // Apply positions and wave effect
+      letters.forEach((letter, i) => {
+        const offsetY = Math.sin(Date.now() / 200 + i) * 5; // small vertical wave
+        letter.style.transform = `translate(${positions[i].x - window.innerWidth / 2}px, ${positions[i].y - window.innerHeight / 2 + offsetY}px)`;
+      });
+
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>
