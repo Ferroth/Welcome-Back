@@ -2,7 +2,7 @@
 <html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Draggable Neon Snake Text</title>
+  <title>Draggable Neon Snake Text + Rain Effect</title>
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
@@ -13,6 +13,7 @@
       overflow: hidden;
       user-select: none;
       font-family: 'Courier New', Courier, monospace;
+      position: relative;
     }
     body::before {
       content: "";
@@ -35,7 +36,7 @@
       display: flex;
       gap: 8px;
       cursor: grab;
-      z-index: 1;
+      z-index: 2;
       user-select: none;
       left: 50%;
       top: 50%;
@@ -75,13 +76,46 @@
       user-select: none;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+    /* Clickable text button */
+    #rainBtn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 1.5em;
+      color: #0cc;
+      cursor: pointer;
+      user-select: none;
+      text-decoration: underline;
+      z-index: 3;
+      font-weight: bold;
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+    #rainBtn:hover {
+      color: #33ffff;
+    }
+    /* Rain drop style */
+    .rain-drop {
+      position: fixed;
+      width: 30px;
+      height: 30px;
+      pointer-events: none;
+      will-change: transform;
+      z-index: 1000;
+      user-select: none;
+    }
   </style>
 </head>
 <body>
   <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
   <p>Let’s make this year amazing 🎓📚✨</p>
 
+  <!-- Clickable text button -->
+  <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
+
   <script>
+    // Text snake code
     const text = "Welcome Back to School!".toUpperCase();
     const container = document.getElementById('container');
     const letters = [];
@@ -98,7 +132,6 @@
     let centerX = containerRect.width / 2;
     let centerY = containerRect.height / 2;
 
-    // Positions relative to container center
     let positions = [];
     for (let i = 0; i < letters.length; i++) {
       positions.push({ x: centerX, y: centerY });
@@ -106,25 +139,21 @@
 
     let isDragging = false;
     let target = { x: centerX, y: centerY };
-    let headIndex = 0; // Index of the letter currently dragging
+    let headIndex = 0;
 
-    // Helper: get mouse/touch relative position inside container
     function getRelativePosition(clientX, clientY) {
       const rect = container.getBoundingClientRect();
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    // Add event listeners for all letters
     letters.forEach((letter, i) => {
-      letter.style.zIndex = 10; // all on top layer
-
+      letter.style.zIndex = 10;
       letter.addEventListener('mousedown', e => {
         isDragging = true;
-        headIndex = i; // this letter becomes the snake head
+        headIndex = i;
         target = getRelativePosition(e.clientX, e.clientY);
         e.preventDefault();
       });
-
       letter.addEventListener('touchstart', e => {
         isDragging = true;
         headIndex = i;
@@ -151,15 +180,12 @@
       isDragging = false;
     });
 
-    // Speed of movement
     const speed = 0.2;
 
     function animate() {
-      // Move the dragged letter toward target
       positions[headIndex].x += (target.x - positions[headIndex].x) * speed;
       positions[headIndex].y += (target.y - positions[headIndex].y) * speed;
 
-      // Letters after the head follow the next letter forward
       for (let i = 1; i < letters.length; i++) {
         let idx = (headIndex + i) % letters.length;
         let prevIdx = (headIndex + i - 1) % letters.length;
@@ -167,7 +193,6 @@
         positions[idx].y += (positions[prevIdx].y - positions[idx].y) * speed;
       }
 
-      // Letters before the head follow the previous letter backward
       for (let i = 1; i < letters.length; i++) {
         let idx = (headIndex - i + letters.length) % letters.length;
         let nextIdx = (headIndex - i + 1 + letters.length) % letters.length;
@@ -175,7 +200,6 @@
         positions[idx].y += (positions[nextIdx].y - positions[idx].y) * speed;
       }
 
-      // Apply positions with wave effect
       letters.forEach((letter, i) => {
         const offsetY = Math.sin(Date.now() / 200 + i) * 5;
         letter.style.transform = `translate(${positions[i].x - centerX}px, ${positions[i].y - centerY + offsetY}px)`;
@@ -184,6 +208,63 @@
       requestAnimationFrame(animate);
     }
     animate();
+
+    // Rain effect code
+    const rainBtn = document.getElementById('rainBtn');
+    const rainContainer = document.body;
+
+    // Replace this URL with your own PNG image URL:
+    const rainImageURL = "https://upload.wikimedia.org/wikipedia/commons/7/7c/School_bus_icon.png";
+
+    function createRainDrop() {
+      const drop = document.createElement('img');
+      drop.src = rainImageURL;
+      drop.className = 'rain-drop';
+      drop.style.left = Math.random() * window.innerWidth + 'px';
+      drop.style.top = '-40px';
+      drop.style.width = "30px";
+      drop.style.height = "30px";
+      drop.style.opacity = (0.6 + Math.random() * 0.4).toFixed(2);
+      rainContainer.appendChild(drop);
+
+      let speedY = 2 + Math.random() * 3;
+      let speedX = (Math.random() - 0.5) * 1.5;
+      let posX = parseFloat(drop.style.left);
+      let posY = -40;
+
+      function fall() {
+        posY += speedY;
+        posX += speedX;
+        drop.style.top = posY + "px";
+        drop.style.left = posX + "px";
+
+        if (posY > window.innerHeight) {
+          drop.remove();
+          return;
+        }
+        requestAnimationFrame(fall);
+      }
+      fall();
+    }
+
+    function startRain() {
+      // Create 30 drops in quick succession
+      for (let i = 0; i < 30; i++) {
+        setTimeout(createRainDrop, i * 100);
+      }
+    }
+
+    rainBtn.addEventListener('click', () => {
+      startRain();
+    });
+
+    // Optional: allow triggering rain with Enter key on the "button"
+    rainBtn.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        startRain();
+      }
+    });
   </script>
 </body>
 </html>
