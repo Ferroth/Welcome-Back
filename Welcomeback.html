@@ -1,272 +1,41 @@
-<!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8" />
-  <title>Draggable Neon Snake Text + Rain Effect</title>
-  <style>
-    html, body {
-      margin: 0; padding: 0; height: 100%;
-      background: #0f0f1a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      user-select: none;
-      font-family: 'Courier New', Courier, monospace;
-      position: relative;
+<script>
+  const rainBtn = document.getElementById('rainBtn');
+  const rainContainer = document.body;
+  const rainImageURL = "school.jpg"; // Your image file
+
+  let popupImage = null;
+
+  rainBtn.addEventListener('click', () => {
+    if (!popupImage) {
+      // Create and show the image
+      popupImage = document.createElement('img');
+      popupImage.src = rainImageURL;
+      popupImage.style.position = 'fixed';
+      popupImage.style.top = '50%';
+      popupImage.style.left = '50%';
+      popupImage.style.transform = 'translate(-50%, -50%)';
+      popupImage.style.width = '300px';
+      popupImage.style.height = 'auto';
+      popupImage.style.zIndex = '999';
+      popupImage.style.boxShadow = '0 0 40px #0ff';
+      popupImage.style.borderRadius = '12px';
+      popupImage.style.transition = 'opacity 0.4s ease';
+      popupImage.style.opacity = '0';
+      popupImage.style.pointerEvents = 'none';
+
+      rainContainer.appendChild(popupImage);
+
+      // Fade in
+      setTimeout(() => {
+        popupImage.style.opacity = '1';
+      }, 10);
+    } else {
+      // Fade out and remove
+      popupImage.style.opacity = '0';
+      setTimeout(() => {
+        popupImage.remove();
+        popupImage = null;
+      }, 400);
     }
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(45deg, #0ff, #ff00ff, #00ffff, #ff007f, #0ff);
-      background-size: 400% 400%;
-      animation: neonBG 20s linear infinite;
-      filter: blur(60px);
-      opacity: 0.6;
-      z-index: 0;
-    }
-    @keyframes neonBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-    #container {
-      position: relative;
-      display: flex;
-      gap: 8px;
-      cursor: grab;
-      z-index: 2;
-      user-select: none;
-      left: 50%;
-      top: 45%;
-      transform: translate(-50%, -50%);
-      position: fixed;
-      height: 4em;
-    }
-    #container:active {
-      cursor: grabbing;
-    }
-    .letter {
-      font-size: 4em;
-      font-weight: 900;
-      color: #0cc;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      text-shadow:
-        0 0 6px #0cc,
-        0 0 12px #0cc,
-        0 0 20px #0cc,
-        0 0 40px #0cc,
-        0 0 80px #0cc;
-      user-select: none;
-      position: relative;
-      transition: transform 0.1s ease-out;
-    }
-    /* Subtext */
-    p {
-      position: fixed;
-      bottom: 40px;
-      width: 100%;
-      text-align: center;
-      font-size: 1.5em;
-      color: #66ffff;
-      text-shadow: 0 0 5px #66ffff;
-      z-index: 1;
-      user-select: none;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      top: 70%;
-      transform: translateY(-50%);
-    }
-    /* Clickable text button */
-    #rainBtn {
-      position: fixed;
-      left: 50%;
-      top: 60%; /* midway between #container and p */
-      transform: translateX(-50%);
-      font-size: 1.2em;
-      color: #0cc;
-      cursor: pointer;
-      user-select: none;
-      text-decoration: underline;
-      z-index: 3;
-      font-weight: 600;
-      background: transparent;
-      border: none;
-      outline: none;
-    }
-    #rainBtn:hover {
-      color: #33ffff;
-    }
-    /* Rain drop style */
-    .rain-drop {
-      position: fixed;
-      width: 30px;
-      height: 30px;
-      pointer-events: none;
-      will-change: transform;
-      z-index: 1000;
-      user-select: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
-
-  <!-- Clickable text button -->
-  <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
-
-  <p>Let’s make this year amazing 🎓📚✨</p>
-
-  <script>
-    // Text snake code
-    const text = "Welcome Back to School!".toUpperCase();
-    const container = document.getElementById('container');
-    const letters = [];
-
-    for (let i = 0; i < text.length; i++) {
-      const span = document.createElement('span');
-      span.classList.add('letter');
-      span.textContent = text[i];
-      container.appendChild(span);
-      letters.push(span);
-    }
-
-    let containerRect = container.getBoundingClientRect();
-    let centerX = containerRect.width / 2;
-    let centerY = containerRect.height / 2;
-
-    let positions = [];
-    for (let i = 0; i < letters.length; i++) {
-      positions.push({ x: centerX, y: centerY });
-    }
-
-    let isDragging = false;
-    let target = { x: centerX, y: centerY };
-    let headIndex = 0;
-
-    function getRelativePosition(clientX, clientY) {
-      const rect = container.getBoundingClientRect();
-      return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    letters.forEach((letter, i) => {
-      letter.style.zIndex = 10;
-      letter.addEventListener('mousedown', e => {
-        isDragging = true;
-        headIndex = i;
-        target = getRelativePosition(e.clientX, e.clientY);
-        e.preventDefault();
-      });
-      letter.addEventListener('touchstart', e => {
-        isDragging = true;
-        headIndex = i;
-        target = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
-        e.preventDefault();
-      });
-    });
-
-    window.addEventListener('mousemove', e => {
-      if (isDragging) {
-        target = getRelativePosition(e.clientX, e.clientY);
-      }
-    });
-    window.addEventListener('touchmove', e => {
-      if (isDragging) {
-        target = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
-      }
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-    });
-    window.addEventListener('touchend', () => {
-      isDragging = false;
-    });
-
-    const speed = 0.2;
-
-    function animate() {
-      positions[headIndex].x += (target.x - positions[headIndex].x) * speed;
-      positions[headIndex].y += (target.y - positions[headIndex].y) * speed;
-
-      for (let i = 1; i < letters.length; i++) {
-        let idx = (headIndex + i) % letters.length;
-        let prevIdx = (headIndex + i - 1) % letters.length;
-        positions[idx].x += (positions[prevIdx].x - positions[idx].x) * speed;
-        positions[idx].y += (positions[prevIdx].y - positions[idx].y) * speed;
-      }
-
-      for (let i = 1; i < letters.length; i++) {
-        let idx = (headIndex - i + letters.length) % letters.length;
-        let nextIdx = (headIndex - i + 1 + letters.length) % letters.length;
-        positions[idx].x += (positions[nextIdx].x - positions[idx].x) * speed;
-        positions[idx].y += (positions[nextIdx].y - positions[idx].y) * speed;
-      }
-
-      letters.forEach((letter, i) => {
-        const offsetY = Math.sin(Date.now() / 200 + i) * 5;
-        letter.style.transform = `translate(${positions[i].x - centerX}px, ${positions[i].y - centerY + offsetY}px)`;
-      });
-
-      requestAnimationFrame(animate);
-    }
-    animate();
-
-    // Rain effect code
-    const rainBtn = document.getElementById('rainBtn');
-    const rainContainer = document.body;
-
-    // Replace this URL with your own PNG image URL:
-    const rainImageURL = "school.jpg";
-
-    function createRainDrop() {
-      const drop = document.createElement('img');
-      drop.src = rainImageURL;
-      drop.className = 'rain-drop';
-      drop.style.left = Math.random() * window.innerWidth + 'px';
-      drop.style.top = '-40px';
-      drop.style.width = "60px";
-      drop.style.height = "60px";
-      drop.style.opacity = (0.6 + Math.random() * 0.4).toFixed(2);
-      rainContainer.appendChild(drop);
-
-      let speedY = 2 + Math.random() * 3;
-      let speedX = (Math.random() - 0.5) * 1.5;
-      let posX = parseFloat(drop.style.left);
-      let posY = -40;
-
-      function fall() {
-        posY += speedY;
-        posX += speedX;
-        drop.style.top = posY + "px";
-        drop.style.left = posX + "px";
-
-        if (posY > window.innerHeight) {
-          drop.remove();
-          return;
-        }
-        requestAnimationFrame(fall);
-      }
-      fall();
-    }
-
-    function startRain() {
-      for (let i = 0; i < 30; i++) {
-        setTimeout(createRainDrop, i * 100);
-      }
-    }
-
-    rainBtn.addEventListener('click', () => {
-      startRain();
-    });
-
-    rainBtn.addEventListener('keydown', e => {
-      if(e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        startRain();
-      }
-    });
-  </script>
-</body>
-</html>
+  });
+</script>
