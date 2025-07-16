@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome Back to School</title>
   <style>
     html, body {
@@ -42,13 +43,14 @@
       top: 45%;
       transform: translate(-50%, -50%);
       position: fixed;
-      height: 4em;
+      height: 10vh; /* Use vh for responsiveness */
+      font-size: 6vw; /* Adjust font size using viewport width */
     }
     #container:active {
       cursor: grabbing;
     }
     .letter {
-      font-size: 4em;
+      font-size: inherit;
       font-weight: 900;
       color: #0cc;
       text-transform: uppercase;
@@ -68,7 +70,7 @@
       bottom: 40px;
       width: 100%;
       text-align: center;
-      font-size: 1.5em;
+      font-size: 2em;
       color: #66ffff;
       text-shadow: 0 0 5px #66ffff;
       z-index: 1;
@@ -109,6 +111,19 @@
       transition: opacity 0.4s ease;
       opacity: 0;
       pointer-events: none;
+    }
+    /* Mobile-specific adjustments */
+    @media (max-width: 600px) {
+      #container {
+        height: 20vh; /* Increase the height of the text container on small screens */
+        font-size: 8vw; /* Increase the font size on mobile devices */
+      }
+      p {
+        font-size: 1.5em;
+      }
+      #rainBtn {
+        font-size: 1em;
+      }
     }
   </style>
 </head>
@@ -211,24 +226,4 @@
     let popupImage = null;
 
     rainBtn.addEventListener('click', () => {
-      if (!popupImage) {
-        popupImage = document.createElement('img');
-        popupImage.src = rainImageURL;
-        popupImage.className = 'popup-image';
-        rainContainer.appendChild(popupImage);
-
-        // para mag fade yung image pag clinick
-        setTimeout(() => {
-          popupImage.style.opacity = '1';
-        }, 10);
-      } else {
-        popupImage.style.opacity = '0';
-        setTimeout(() => {
-          popupImage.remove();
-          popupImage = null;
-        }, 400);
-      }
-    });
-  </script>
-</body>
-</html>
+      if (!popupImage
