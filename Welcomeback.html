@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Draggable Neon Snake Text + Image Popup</title>
+  <title>Welcome Back to School</title>
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
@@ -120,7 +120,7 @@
   <p>Let’s make this year amazing 🎓📚✨</p>
 
   <script>
-    // Draggable snake text
+    // para ma galaw yung letter
     const text = "Welcome Back to School!".toUpperCase();
     const container = document.getElementById('container');
     const letters = [];
@@ -204,10 +204,10 @@
     }
     animate();
 
-    // One-time image popup toggle
+    // para lumabas pag clinick
     const rainBtn = document.getElementById('rainBtn');
     const rainContainer = document.body;
-    const rainImageURL = "school.png"; // Replace with your image filename
+    const rainImageURL = "school.png"; 
     let popupImage = null;
 
     rainBtn.addEventListener('click', () => {
@@ -217,7 +217,7 @@
         popupImage.className = 'popup-image';
         rainContainer.appendChild(popupImage);
 
-        // Allow image to appear with fade
+        // para mag fade yung image pag clinick
         setTimeout(() => {
           popupImage.style.opacity = '1';
         }, 10);
