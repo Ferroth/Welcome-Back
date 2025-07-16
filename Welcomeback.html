@@ -8,14 +8,11 @@
     html, body {
       margin: 0; padding: 0; height: 100%;
       background: #0f0f1a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
-      user-select: none;
       font-family: 'Courier New', Courier, monospace;
       position: relative;
     }
+
     body::before {
       content: "";
       position: fixed;
@@ -27,30 +24,29 @@
       opacity: 0.6;
       z-index: 0;
     }
+
     @keyframes neonBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
+
     #container {
-      position: relative;
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: flex;
       gap: 8px;
-      cursor: grab;
       z-index: 2;
-      user-select: none;
-      left: 50%;
-      top: 45%;
-      transform: translate(-50%, -50%);
-      position: fixed;
-      height: 10vh; /* Use vh for responsiveness */
-      font-size: 6vw; /* Adjust font size using viewport width */
+      height: auto;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
     }
-    #container:active {
-      cursor: grabbing;
-    }
+
     .letter {
-      font-size: inherit;
+      font-size: 8vw;
       font-weight: 900;
       color: #0cc;
       text-transform: uppercase;
@@ -61,49 +57,47 @@
         0 0 20px #0cc,
         0 0 40px #0cc,
         0 0 80px #0cc;
-      user-select: none;
-      position: relative;
       transition: transform 0.1s ease-out;
     }
+
     p {
       position: fixed;
-      bottom: 40px;
+      bottom: 20px;
       width: 100%;
       text-align: center;
-      font-size: 2em;
+      font-size: 1.5em;
       color: #66ffff;
       text-shadow: 0 0 5px #66ffff;
       z-index: 1;
-      user-select: none;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      top: 70%;
-      transform: translateY(-50%);
     }
+
     #rainBtn {
       position: fixed;
       left: 50%;
-      top: 60%;
+      top: 65%;
       transform: translateX(-50%);
       font-size: 1.2em;
       color: #0cc;
       cursor: pointer;
-      user-select: none;
       text-decoration: underline;
       z-index: 3;
       font-weight: 600;
       background: transparent;
       border: none;
-      outline: none;
     }
+
     #rainBtn:hover {
       color: #33ffff;
     }
+
     .popup-image {
       position: fixed;
-      top: 20%;
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 400px;
+      width: 80%;
+      max-width: 400px;
       height: auto;
       z-index: 999;
       box-shadow: 0 0 40px #0ff;
@@ -112,30 +106,28 @@
       opacity: 0;
       pointer-events: none;
     }
-    /* Mobile-specific adjustments */
-    @media (max-width: 600px) {
-      #container {
-        height: 20vh; /* Increase the height of the text container on small screens */
-        font-size: 8vw; /* Increase the font size on mobile devices */
-      }
-      p {
-        font-size: 1.5em;
-      }
-      #rainBtn {
-        font-size: 1em;
+
+    .popup-image.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    @media (min-width: 768px) {
+      .letter {
+        font-size: 4em;
       }
     }
   </style>
 </head>
 <body>
-  <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
 
-  <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
+  <div id="container"></div>
+
+  <span id="rainBtn">click here</span>
 
   <p>Let’s make this year amazing 🎓📚✨</p>
 
   <script>
-    // para ma galaw yung letter
     const text = "Welcome Back to School!".toUpperCase();
     const container = document.getElementById('container');
     const letters = [];
@@ -148,6 +140,7 @@
       letters.push(span);
     }
 
+    // Animate letters following the cursor/touch
     let containerRect = container.getBoundingClientRect();
     let centerX = containerRect.width / 2;
     let centerY = containerRect.height / 2;
@@ -162,7 +155,6 @@
     }
 
     letters.forEach((letter, i) => {
-      letter.style.zIndex = 10;
       letter.addEventListener('mousedown', e => {
         isDragging = true;
         headIndex = i;
@@ -182,17 +174,19 @@
         target = getRelativePosition(e.clientX, e.clientY);
       }
     });
+
     window.addEventListener('touchmove', e => {
       if (isDragging) {
         target = getRelativePosition(e.touches[0].clientX, e.touches[0].clientY);
       }
     });
+
     window.addEventListener('mouseup', () => isDragging = false);
     window.addEventListener('touchend', () => isDragging = false);
 
-    const speed = 0.2;
-
     function animate() {
+      const speed = 0.2;
+
       positions[headIndex].x += (target.x - positions[headIndex].x) * speed;
       positions[headIndex].y += (target.y - positions[headIndex].y) * speed;
 
@@ -219,11 +213,27 @@
     }
     animate();
 
-    // para lumabas pag clinick
+    // Image popup toggle
     const rainBtn = document.getElementById('rainBtn');
-    const rainContainer = document.body;
-    const rainImageURL = "school.png"; 
+    const rainImageURL = "school.png"; // Make sure this path is correct
     let popupImage = null;
 
     rainBtn.addEventListener('click', () => {
-      if (!popupImage
+      if (!popupImage) {
+        popupImage = document.createElement('img');
+        popupImage.src = rainImageURL;
+        popupImage.className = 'popup-image visible';
+        document.body.appendChild(popupImage);
+      } else {
+        popupImage.classList.toggle('visible');
+        if (!popupImage.classList.contains('visible')) {
+          setTimeout(() => {
+            popupImage.remove();
+            popupImage = null;
+          }, 400);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
