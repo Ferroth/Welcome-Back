@@ -2,19 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Welcome Back to School</title>
   <style>
     html, body {
       margin: 0; padding: 0; height: 100%;
       background: #0f0f1a;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: hidden;
-      user-select: none;
       font-family: 'Courier New', Courier, monospace;
       position: relative;
     }
+
     body::before {
       content: "";
       position: fixed;
@@ -26,29 +24,32 @@
       opacity: 0.6;
       z-index: 0;
     }
+
     @keyframes neonBG {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
+
     #container {
-      position: relative;
-      display: flex;
-      gap: 8px;
-      cursor: grab;
-      z-index: 2;
-      user-select: none;
+      position: fixed;
       left: 50%;
       top: 45%;
       transform: translate(-50%, -50%);
-      position: fixed;
+      display: flex;
+      gap: 8px;
+      white-space: nowrap; /* ✅ Keep in one line */
+      z-index: 2;
       height: 4em;
+      cursor: grab;
     }
+
     #container:active {
       cursor: grabbing;
     }
+
     .letter {
-      font-size: 4em;
+      font-size: clamp(2rem, 6vw, 4em); /* ✅ Responsive size */
       font-weight: 900;
       color: #0cc;
       text-transform: uppercase;
@@ -63,6 +64,7 @@
       position: relative;
       transition: transform 0.1s ease-out;
     }
+
     p {
       position: fixed;
       bottom: 40px;
@@ -72,11 +74,9 @@
       color: #66ffff;
       text-shadow: 0 0 5px #66ffff;
       z-index: 1;
-      user-select: none;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      top: 70%;
-      transform: translateY(-50%);
     }
+
     #rainBtn {
       position: fixed;
       left: 50%;
@@ -87,32 +87,40 @@
       cursor: pointer;
       user-select: none;
       text-decoration: underline;
-      z-index: 3;
+      z-index: 4; /* ✅ Place above image */
       font-weight: 600;
       background: transparent;
       border: none;
-      outline: none;
     }
+
     #rainBtn:hover {
       color: #33ffff;
     }
+
     .popup-image {
       position: fixed;
       top: 20%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 400px;
+      width: 80%;
+      max-width: 400px;
       height: auto;
-      z-index: 999;
+      z-index: 3; /* ✅ Below button */
       box-shadow: 0 0 40px #0ff;
       border-radius: 12px;
       transition: opacity 0.4s ease;
       opacity: 0;
       pointer-events: none;
     }
+
+    .popup-image.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
+
   <div id="container" aria-label="Welcome Back to School draggable text" role="main"></div>
 
   <span id="rainBtn" role="button" tabindex="0" aria-pressed="false">click here</span>
@@ -120,7 +128,6 @@
   <p>Let’s make this year amazing 🎓📚✨</p>
 
   <script>
-    // para ma galaw yung letter
     const text = "Welcome Back to School!".toUpperCase();
     const container = document.getElementById('container');
     const letters = [];
@@ -197,36 +204,32 @@
 
       letters.forEach((letter, i) => {
         const offsetY = Math.sin(Date.now() / 200 + i) * 5;
-        letter.style.transform = translate(${positions[i].x - centerX}px, ${positions[i].y - centerY + offsetY}px);
+        letter.style.transform = `translate(${positions[i].x - centerX}px, ${positions[i].y - centerY + offsetY}px)`;
       });
 
       requestAnimationFrame(animate);
     }
     animate();
 
-    // para lumabas pag clinick
+    // Toggle image on click
     const rainBtn = document.getElementById('rainBtn');
-    const rainContainer = document.body;
-    const rainImageURL = "school.png"; 
+    const rainImageURL = "school.png"; // Ensure this file exists!
     let popupImage = null;
 
     rainBtn.addEventListener('click', () => {
       if (!popupImage) {
         popupImage = document.createElement('img');
         popupImage.src = rainImageURL;
-        popupImage.className = 'popup-image';
-        rainContainer.appendChild(popupImage);
-
-        // para mag fade yung image pag clinick
-        setTimeout(() => {
-          popupImage.style.opacity = '1';
-        }, 10);
+        popupImage.className = 'popup-image visible';
+        document.body.appendChild(popupImage);
       } else {
-        popupImage.style.opacity = '0';
-        setTimeout(() => {
-          popupImage.remove();
-          popupImage = null;
-        }, 400);
+        popupImage.classList.toggle('visible');
+        if (!popupImage.classList.contains('visible')) {
+          setTimeout(() => {
+            popupImage.remove();
+            popupImage = null;
+          }, 400);
+        }
       }
     });
   </script>
